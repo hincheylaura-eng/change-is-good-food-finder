@@ -54,6 +54,10 @@ You should now see all your files listed on the repository page.
 
 **6. Wait about a minute.** When it says **Published**, click the link Netlify shows (it will look like `random-words-12345.netlify.app`). That's your live site. Try a zip code like `80203`.
 
+**6b. Make it public.** Netlify may start new projects as **Private**, which means visitors see a login page instead of your site. On the project's overview page, click **Make public**, keep "Public: Anyone on the internet," and click **Make public** again.
+
+**6c. Turn off the Netlify badge (optional).** Go to **Project configuration** → **General** → **Powered by Netlify badge** → **Configure**, uncheck "Show the badge on this project," and click **Save**.
+
 **7. Give it a nicer address (free).**
 1. In Netlify, go to **Project configuration** (or **Site configuration**) → **Change project name** (or **Change site name**).
 2. Type something like `changeisgood-foodfinder` and save.

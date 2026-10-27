@@ -46,10 +46,7 @@ a:hover { color: var(--purple-dark); }
 /* Header */
 .site-header { background: var(--plum); color: #fff; padding: 14px 0; }
 .header-inner { display: flex; align-items: center; gap: 14px; }
-.logo {
-  width: 84px; height: auto; flex: none;
-  border-radius: 50%;          /* clips the logo to its oval */
-}
+.logo { width: 76px; height: auto; flex: none; }
 .brand { flex: 1; min-width: 0; }
 .brand h1 { margin: 0; font-size: 1.35rem; line-height: 1.2; }
 .tagline { margin: 2px 0 0; font-style: italic; color: #f3e8fb; }
@@ -171,7 +168,7 @@ select, input[type="search"] {
 .site-footer .privacy { color: #f3e8fb; font-size: .95rem; }
 
 @media (min-width: 640px) {
-  .logo { width: 120px; }
+  .logo { width: 110px; }
   .brand h1 { font-size: 1.8rem; }
   .national-small { grid-template-columns: 1fr 1fr; }
 }

@@ -15,7 +15,7 @@ A free community project by Change is Good.
 | `app.js` | Zip code search, distance, filters, English/Español |
 | `listings.csv` | **All Denver metro listings. The only file you need to edit.** See `LISTINGS-GUIDE.md`. |
 | `zipcodes.csv` | Map points for every Colorado zip code, from the US Census Bureau 2024 ZCTA Gazetteer. Zip codes outside Colorado get the national options. |
-| `images/` | Web-sized logo and browser tab icons, made from `logo.png` |
+| `images/` | `lotus.png` (header logo: the lotus cut from `logo.png`), plus the browser tab and home-screen icons |
 | `logo.png` | Original logo (not loaded by the site; kept as the master copy) |
 | `netlify.toml` | Tells Netlify there's no build step |
 | `SETUP-GUIDE.md` | How to put the site online with GitHub and Netlify |
