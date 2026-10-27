@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Change is Good Food Finder</title>
+  <meta name="description" content="Find free food and assistance near you. Detailed listings for the Denver metro area, and help finding resources anywhere in the US.">
+  <meta name="theme-color" content="#3f1d5c">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <!-- LOGO: images/logo.jpg is a web-sized copy of logo.png. To change the logo, replace that file. -->
+      <img class="logo" src="images/logo.jpg" width="150" height="126" alt="Change is Good logo: a white lotus flower">
+      <div class="brand">
+        <h1>Change is Good Food Finder</h1>
+        <p class="tagline">from the mud, into the light.</p>
+      </div>
+      <button type="button" id="lang-toggle" class="lang-toggle" lang="es">Español</button>
+    </div>
+  </header>
+
+  <div class="call-ahead" role="note">
+    <div class="wrap">
+      <strong data-i18n="callAheadTitle">Always call ahead.</strong>
+      <span data-i18n="callAheadBody">Hours change, and places can close for holidays or bad weather.</span>
+    </div>
+  </div>
+
+  <main id="main" class="wrap">
+    <p class="intro" data-i18n="intro">Everyone needs help sometimes. Here's where to find it.</p>
+
+    <section class="search-box" aria-labelledby="search-title">
+      <form id="zip-form" novalidate>
+        <label id="search-title" for="zip" class="search-label" data-i18n="zipLabel">Enter your zip code</label>
+        <div class="zip-row">
+          <input id="zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code"
+                 pattern="[0-9]{5}" maxlength="5" placeholder="80202" aria-describedby="zip-msg">
+          <button type="submit" class="btn btn-primary btn-big" data-i18n="findFood">Find food</button>
+        </div>
+        <div class="search-options">
+          <label for="radius" data-i18n="radiusLabel">Distance:</label>
+          <select id="radius">
+            <option value="5" data-i18n="miles5">5 miles</option>
+            <option value="10" selected data-i18n="miles10">10 miles</option>
+            <option value="25" data-i18n="miles25">25 miles</option>
+          </select>
+          <button type="button" id="locate" class="btn btn-secondary" data-i18n="useLocation">Use my location</button>
+        </div>
+        <p id="zip-msg" class="zip-msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <div id="results-area">
+      <section class="filters" aria-label="Filters" data-i18n-aria="filters">
+        <button type="button" id="open-today" class="btn btn-toggle" aria-pressed="false">
+          <span data-i18n="openToday">Open today</span>
+        </button>
+        <div class="filter-row">
+          <label for="type-filter" class="sr-only" data-i18n="typeLabel">Type of help</label>
+          <select id="type-filter">
+            <option value="" data-i18n="allTypes">All types of help</option>
+            <option value="Food pantry" data-i18n="Food pantry">Food pantry</option>
+            <option value="Free meal" data-i18n="Free meal">Free meal</option>
+            <option value="One-time event" data-i18n="One-time event">One-time event</option>
+            <option value="Assistance program" data-i18n="Assistance program">Assistance program</option>
+          </select>
+          <label for="name-search" class="sr-only" data-i18n="searchLabel">Search by name</label>
+          <input id="name-search" type="search" placeholder="Search by name" data-i18n-placeholder="searchLabel">
+        </div>
+      </section>
+
+      <p id="results-summary" class="results-summary" role="status" aria-live="polite"></p>
+      <div id="no-results"></div>
+      <div id="listings" class="listings"></div>
+      <div id="phone-help"></div>
+    </div>
+
+    <section class="outside" aria-labelledby="outside-title">
+      <h2 id="outside-title" data-i18n="outsideTitle">Outside Denver?</h2>
+      <p data-i18n="outsideBody">These free services can help you find food anywhere in the US.</p>
+      <div id="national-small" class="national national-small"></div>
+    </section>
+
+    <noscript>
+      <p class="noscript">This page needs JavaScript to search. You can also call 2-1-1 for free help finding food, any time.</p>
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p data-i18n="footer">A free community project by Change is Good.</p>
+      <p class="privacy" data-i18n="privacy">No tracking, no cookies, no ads. Your zip code and location stay on your phone.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

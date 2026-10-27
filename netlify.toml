@@ -1,0 +1,10 @@
+# Netlify settings. There is no build step: the folder is published as-is.
+[build]
+  publish = "."
+
+# Always check for a fresh listings.csv so changes show up right away.
+[[headers]]
+  for = "/listings.csv"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "text/csv; charset=utf-8"
