@@ -69,9 +69,12 @@
       loading: "Loading listings...",
       loadFailed: "We couldn't load the listings right now. Please try again, or call 2-1-1 for help finding food.",
       summaryAll: "Places in the Denver area: {n}. Enter your zip code to see the closest first.",
-      summaryNear: "Places within about {r} miles: {n}.",
+      summaryNear: "Places within {r} miles: {n}.",
       summaryNow: "Places open right now: {n}.",
+      summaryNowNear: "Places open right now within {r} miles: {n}.",
       summaryAhead: "Places open {when}: {n}.",
+      summaryAheadNear: "Places open {when} within {r} miles: {n}.",
+      summaryPast: "Just past {r} miles: {n}.",
       noneOpen: "None of the places with listed hours are open then. Try another time, or call the places below.",
       noneMatch: "Nothing matches. Try \"Show all,\" a bigger distance, or clear filters.",
       noArea: "We don't have detailed listings for your area yet. These free services can help you find food near you:",
@@ -180,9 +183,12 @@
       loading: "Cargando lugares...",
       loadFailed: "No pudimos cargar los lugares. Intente de nuevo, o llame al 2-1-1 para encontrar comida.",
       summaryAll: "Lugares en el área de Denver: {n}. Escriba su código postal para ver los más cercanos primero.",
-      summaryNear: "Lugares a unas {r} millas: {n}.",
+      summaryNear: "Lugares a {r} millas o menos: {n}.",
       summaryNow: "Lugares abiertos ahora: {n}.",
+      summaryNowNear: "Lugares abiertos ahora a {r} millas o menos: {n}.",
       summaryAhead: "Lugares abiertos {when}: {n}.",
+      summaryAheadNear: "Lugares abiertos {when} a {r} millas o menos: {n}.",
+      summaryPast: "Un poco más de {r} millas: {n}.",
       noneOpen: "Ninguno de los lugares con horario publicado abre a esa hora. Pruebe otra hora, o llame a los lugares de abajo.",
       noneMatch: "No hay resultados. Pruebe \"Ver todo\", una distancia mayor, o quite los filtros.",
       noArea: "Todavía no tenemos lugares detallados para su área. Estos servicios gratuitos le ayudan a encontrar comida cerca de usted:",
@@ -427,7 +433,7 @@
   function fillAheadDays() {
     var sel = $("ahead-day"), keep = sel.value || "0";
     sel.textContent = "";
-    for (var i = 0; i < 7; i++) {
+    for (var i = 0; i < 14; i++) {
       var label = i === 0 ? t("today") : i === 1 ? t("tomorrow") :
         addDays(new Date(), i).toLocaleDateString(lang === "es" ? "es-US" : "en-US", { weekday: "long", month: "short", day: "numeric" });
       sel.appendChild(el("option", { value: String(i), text: label }));
@@ -637,8 +643,12 @@
     });
 
     // Listings with no place on the map (phone lines, statewide programs) are shown separately.
+    // Phone lines with exact hours follow the time choice too, so a line that's closed then isn't shown.
     var placed = [], phoneOnly = [];
-    filtered.forEach(function (l) { (placeOf(l) ? placed : phoneOnly).push(l); });
+    filtered.forEach(function (l) {
+      if (placeOf(l)) placed.push(l);
+      else if (timeMatch(l, when) !== "no") phoneOnly.push(l);
+    });
 
     var nearby = placed.map(function (l) { return { l: l, d: origin ? miles(origin, placeOf(l)) : null }; });
     if (origin) {
@@ -673,10 +683,14 @@
       if (m === "yes") shown.push(x); else if (m === "unknown") maybe.push(x);
     });
 
+    // With a zip code, count places inside the distance separately from the "just past" ones.
+    var past = origin ? shown.filter(function (x) { return x.d > radius; }).length : 0;
+    var vars = { n: shown.length - past, r: radius, when: aheadDayLabel(+$("ahead-day").value) };
     var countText;
-    if (when.mode === "now") countText = t("summaryNow", { n: shown.length });
-    else if (when.mode === "ahead") countText = t("summaryAhead", { n: shown.length, when: aheadDayLabel(+$("ahead-day").value) });
-    else countText = origin ? t("summaryNear", { n: shown.length, r: radius }) : t("summaryAll", { n: shown.length });
+    if (when.mode === "now") countText = t(origin ? "summaryNowNear" : "summaryNow", vars);
+    else if (when.mode === "ahead") countText = t(origin ? "summaryAheadNear" : "summaryAhead", vars);
+    else countText = origin ? t("summaryNear", vars) : t("summaryAll", vars);
+    if (past) countText += " " + t("summaryPast", { n: past, r: radius });
     summary.textContent = countText + (TEXT[lang].listingNote ? " " + TEXT[lang].listingNote : "");
 
     if (!shown.length) none.appendChild(el("p", { class: "no-listings", text: t(maybe.length ? "noneOpen" : "noneMatch") }));
