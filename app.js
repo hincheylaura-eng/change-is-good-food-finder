@@ -55,6 +55,7 @@
       styleBoth: "Walk-in and drive-through",
       filtersOn: "Some filters are on, so you may not see every place.",
       clearFilters: "Clear filters",
+      showMore: "Show more",
       outsideTitle: "Outside Denver?",
       outsideBody: "These free services can help you find food anywhere in the US.",
       footer: "A free community project by Change is Good.",
@@ -172,6 +173,7 @@
       styleBoth: "A pie y desde el auto",
       filtersOn: "Hay filtros activos, así que quizás no vea todos los lugares.",
       clearFilters: "Quitar filtros",
+      showMore: "Ver más",
       outsideTitle: "¿Fuera de Denver?",
       outsideBody: "Estos servicios gratuitos le ayudan a encontrar comida en todo EE. UU.",
       footer: "Un proyecto comunitario gratuito de Change is Good.",
@@ -260,6 +262,8 @@
   var zipTable = null;      // { "80202": {lat, lon}, ... }
   var origin = null;        // { lat, lon, zip } of the visitor, kept in memory only
   var outsideArea = false;
+  var PAGE_SIZE = 15;        // cards shown before "Show more"
+  var pageLimit = PAGE_SIZE, keepPage = false;
   var loadError = false;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -367,6 +371,44 @@
     });
     return out;
   }
+  // Backup for listings with no Distribution hours: read plain Hours text like
+  // "Mon, Wed, Thu, Fri 8:30am-5pm; Tue 8:30am-1:30pm" or "3rd Sat of the month 9-11am".
+  // Returns [] unless every part with times also names its days.
+  var DAY_WORD = /^(mon|mondays?|tue|tues|tuesdays?|wed|weds|wednesdays?|thu|thur|thurs|thursdays?|fri|fridays?|sat|saturdays?|sun|sundays?)$/;
+  function parseFriendlyHours(s) {
+    // Leave anything with exceptions or choices to a person: "closed Wed", "Thu or Fri", "listed as".
+    if (/\b(closed|except|or|listed as|also as|varies)\b/i.test(s || "")) return [];
+    var text = (s || "").toLowerCase().replace(/\bnoon\b/g, "12pm").replace(/\bof (?:each|the) month\b/g, " ")
+      .replace(/[–—]/g, "-").replace(/\s*-\s*/g, "-");
+    var out = [], days = [], nth = [], ranges = [], bad = false;
+    function flush() {
+      if (ranges.length) { if (days.length) out.push({ days: days, nth: nth.length ? nth : null, ranges: ranges }); else bad = true; }
+      days = []; nth = []; ranges = [];
+    }
+    text.split(/;|\.\s/).forEach(function (part) {
+      var re = /(\d{1,2})(?::(\d{2}))?(am|pm)?-(\d{1,2})(?::(\d{2}))?(am|pm)|([a-z0-9]+)(?:-([a-z]+))?/g, m;
+      while ((m = re.exec(part))) {
+        if (m[6]) {
+          var eh = +m[4] % 12 + (m[6] === "pm" ? 12 : 0), sh = +m[1] % 12;
+          if (m[3]) sh += m[3] === "pm" ? 12 : 0;
+          else if (m[6] === "pm" && sh + 12 <= eh) sh += 12;   // "4-7pm" is 4pm, "11-2pm" is 11am
+          var a = sh * 60 + +(m[2] || 0), b = eh * 60 + +(m[5] || 0);
+          if (b > a) ranges.push([a, b]);
+          continue;
+        }
+        var word = m[7], dk = dayKey(word), isDay = DAY_WORD.test(word);
+        if (ORDINALS[word] !== undefined || isDay) {
+          if (ranges.length) flush();          // "Mon 9-11, Wed 1-3": a new day starts a new entry
+          if (ORDINALS[word] !== undefined) { nth.push(ORDINALS[word]); continue; }
+          var to = m[8] && DAY_WORD.test(m[8]) ? dayKey(m[8]) : -1;
+          if (to >= 0) for (var k = dk; ; k = (k + 1) % 7) { days.push(k); if (k === to) break; }
+          else days.push(dk);
+        }
+      }
+      flush();
+    });
+    return bad ? [] : out;
+  }
   function entryApplies(e, date, l) {
     if (l.type === "One-time event" && l.eventDate !== isoOf(date)) return false;
     if (!e.days.length) return l.type === "One-time event";
@@ -468,6 +510,14 @@
     sel.value = keep;
   }
 
+  // One schedule drives the card status, Open now, and Look ahead alike.
+  // Distribution hours wins; plain Hours text is the backup unless the notes say schedules conflict.
+  function scheduleOf(o) {
+    var s = parseSchedule(o["distribution hours"]);
+    if (s.length || (o["distribution hours"] || "").trim()) return s;
+    if (/do not agree|don't agree|disagree|conflict/i.test(o["notes"] || "")) return [];
+    return parseFriendlyHours(o["hours"]);
+  }
   function cleanListing(o) {
     var lat = parseFloat(o["latitude"]), lon = parseFloat(o["longitude"]);
     var days = (o["days"] || "").split(/[\s,]+/).map(function (d) { return DAY_KEYS[dayKey(d)]; })
@@ -478,7 +528,7 @@
     return {
       id: o["id"], name: o["name"], type: o["type"], address: o["address"], city: o["city"],
       zip: (o["zip"] || "").slice(0, 5), lat: isNaN(lat) ? null : lat, lon: isNaN(lon) ? null : lon,
-      days: days, hours: o["hours"], schedule: parseSchedule(o["distribution hours"]),
+      days: days, hours: o["hours"], schedule: scheduleOf(o),
       closed: parseClosed(o["closed dates"]),
       bring: o["what to bring"], phone: o["phone"], website: o["website"],
       notes: o["notes"], eventDate: o["event date"], verified: o["last verified"], source: o["source"],
@@ -676,6 +726,9 @@
   }
 
   function render() {
+    // Any new search, filter, or language change starts back at the first page.
+    if (!keepPage) pageLimit = PAGE_SIZE;
+    keepPage = false;
     var list = $("listings"), summary = $("results-summary"), none = $("no-results"),
         unknown = $("unknown-hours"), phone = $("phone-help");
     list.textContent = ""; none.textContent = ""; unknown.textContent = ""; phone.textContent = "";
@@ -758,9 +811,20 @@
 
     if (!shown.length) none.appendChild(el("p", { class: "no-listings", text: t(maybe.length ? "noneOpen" : "noneMatch") }));
 
-    shown.forEach(function (x) {
+    shown.slice(0, pageLimit).forEach(function (x) {
       list.appendChild(card(x.l, x.d === null ? null : Math.round(x.d * 10) / 10, radius, when));
     });
+    if (shown.length > pageLimit) {
+      var more = el("button", { type: "button", class: "btn btn-secondary show-more", text: t("showMore") });
+      more.addEventListener("click", function () {
+        var first = shown[pageLimit].l.id;
+        pageLimit += PAGE_SIZE; keepPage = true; render();
+        // Move keyboard and screen reader focus to the first new card.
+        var c = $("listing-" + first);
+        if (c) { c.setAttribute("tabindex", "-1"); c.focus(); }
+      });
+      list.appendChild(more);
+    }
 
     if (maybe.length) {
       unknown.appendChild(el("h2", { class: "section-title", text: t("unknownTitle") }));
