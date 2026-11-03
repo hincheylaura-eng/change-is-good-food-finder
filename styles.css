@@ -132,6 +132,7 @@ select, input[type="search"] {
 
 /* Listing cards */
 .listings { display: grid; gap: 14px; }
+.show-more { width: 100%; font-size: 1.1rem; }
 .card {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 16px;
@@ -187,6 +188,7 @@ select, input[type="search"] {
 }
 .no-listings p { margin-top: 0; font-size: 1.1rem; }
 .national { display: grid; gap: 10px; }
+.state-hotline { margin-bottom: 14px; }
 .national a.option {
   display: block; text-decoration: none; color: var(--ink);
   background: #fff; border: 2px solid var(--purple); border-radius: var(--radius);
