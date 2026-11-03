@@ -187,6 +187,7 @@ select, input[type="search"] {
 }
 .no-listings p { margin-top: 0; font-size: 1.1rem; }
 .national { display: grid; gap: 10px; }
+.state-hotline { margin-bottom: 14px; }
 .national a.option {
   display: block; text-decoration: none; color: var(--ink);
   background: #fff; border: 2px solid var(--purple); border-radius: var(--radius);

@@ -10,6 +10,7 @@
   var COVERAGE_MILES = 40;   // zip codes farther than this from downtown Denver get the national options
   var EDGE_MILES = 1;        // also show places just past the distance, since a zip code is measured from its middle
   var STALE_DAYS = 30;       // "Hours may have changed" note after this many days
+  var STATE_HOTLINE = "hunger-free-colorado-hotline"; // shown to Colorado zip codes with no local listings
   var DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var WINDOWS = { any: [0, 1440], morning: [360, 720], afternoon: [720, 1020], evening: [1020, 1260] };
   var ORDINALS = { "1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "last": -1 };
@@ -77,6 +78,7 @@
       summaryPast: "Just past {r} miles: {n}.",
       closedDates: "Closed on",
       closedToday: "Closed today (special closure)",
+      callDays: "Call to confirm days",
       noneOpen: "None of the places with listed hours are open then. Try another time, or call the places below.",
       noneMatch: "Nothing matches. Try \"Show all,\" a bigger distance, or clear filters.",
       noArea: "We don't have detailed listings for your area yet. These free services can help you find food near you:",
@@ -193,6 +195,8 @@
       summaryPast: "Un poco más de {r} millas: {n}.",
       closedDates: "Cerrado el",
       closedToday: "Cerrado hoy (cierre especial)",
+      callDays: "Llame para confirmar los días",
+      someEnglish: "Algunos detalles están en inglés.",
       noneOpen: "Ninguno de los lugares con horario publicado abre a esa hora. Pruebe otra hora, o llame a los lugares de abajo.",
       noneMatch: "No hay resultados. Pruebe \"Ver todo\", una distancia mayor, o quite los filtros.",
       noArea: "Todavía no tenemos lugares detallados para su área. Estos servicios gratuitos le ayudan a encontrar comida cerca de usted:",
@@ -382,6 +386,11 @@
     var d = isoOf(date);
     return l.closed.some(function (c) { return d >= c[0] && d <= c[1]; });
   }
+  // True when the hours say which days they apply to. Times with no days ("8:30-11am") don't.
+  function hasDays(l) {
+    if (l.type === "One-time event") return l.schedule.length > 0;
+    return l.schedule.some(function (e) { return e.days.length > 0; });
+  }
   function rangesOn(l, date) {
     if (closedOn(l, date)) return [];
     var r = [];
@@ -414,7 +423,7 @@
   function timeMatch(l, when) {
     if (when.mode === "all") return "yes";
     if (closedOn(l, when.date)) return "no";
-    if (l.schedule.length) {
+    if (hasDays(l)) {
       return rangesOn(l, when.date).some(function (r) {
         return when.mode === "now" ? (when.from >= r[0] && when.from < r[1]) : (r[0] < when.to && r[1] > when.from);
       }) ? "yes" : "no";
@@ -429,6 +438,7 @@
   function statusOf(l, when) {
     if (when.mode !== "ahead" && closedOn(l, new Date())) return { cls: "closed", text: t("closedToday") };
     if (!l.schedule.length) return { cls: "unknown", text: t("hoursNotListed") };
+    if (!hasDays(l)) return { cls: "unknown", text: t("callDays") };
     if (when.mode === "ahead") {
       var r = rangesOn(l, when.date).filter(function (x) { return x[0] < when.to && x[1] > when.from; });
       if (!r.length) return null;
@@ -547,8 +557,34 @@
   function safeUrl(u) { return /^https?:\/\//i.test(u || "") ? u : null; }
   function telHref(p) { var d = (p || "").replace(/[^\d+]/g, ""); return d ? "tel:" + d : null; }
 
+  // In Spanish, translate the parts of the Hours column that follow a pattern (days, "1st", "noon", "am").
+  // Everything else stays as written. No machine translation.
+  var ES_HOURS = [
+    [/\bMondays\b/g, "lunes"], [/\bTuesdays\b/g, "martes"], [/\bWednesdays\b/g, "miércoles"],
+    [/\bThursdays\b/g, "jueves"], [/\bFridays\b/g, "viernes"], [/\bSaturdays\b/g, "sábados"], [/\bSundays\b/g, "domingos"],
+    [/\bMonday\b/g, "lunes"], [/\bTuesday\b/g, "martes"], [/\bWednesday\b/g, "miércoles"],
+    [/\bThursday\b/g, "jueves"], [/\bFriday\b/g, "viernes"], [/\bSaturday\b/g, "sábado"], [/\bSunday\b/g, "domingo"],
+    [/\bMon\b\.?/g, "lun"], [/\bTues?\b\.?/g, "mar"], [/\bWed\b\.?/g, "mié"], [/\bThu(?:rs?)?\b\.?/g, "jue"],
+    [/\bFri\b\.?/g, "vie"], [/\bSat\b\.?/g, "sáb"], [/\bSun\b\.?/g, "dom"],
+    [/\b1st\b/g, "1.er"], [/\b2nd\b/g, "2.º"], [/\b3rd\b/g, "3.er"], [/\b4th\b/g, "4.º"], [/\b5th\b/g, "5.º"], [/\blast\b/g, "último"],
+    [/\bJan\b/g, "ene"], [/\bFeb\b/g, "feb"], [/\bMar\b/g, "mar"], [/\bApr\b/g, "abr"], [/\bMay\b/g, "may"],
+    [/\bJun\b/g, "jun"], [/\bJul\b/g, "jul"], [/\bAug\b/g, "ago"], [/\bSep\b/g, "sep"], [/\bOct\b/g, "oct"],
+    [/\bNov\b/g, "nov"], [/\bDec\b/g, "dic"],
+    [/\bof (?:each|the) month\b/g, "del mes"], [/\bevery week\b/g, "cada semana"],
+    [/\bCall for hours\b/g, "Llame para saber el horario"],
+    [/^Listed as\b/, "Aparece como"], [/,? and also as\b/g, " y también como"],
+    [/(\d)\s?am\b/g, "$1 a. m."], [/(\d)\s?pm\b/g, "$1 p. m."], [/\. m\.\./g, ". m."],
+    [/\bnoon\b/g, "mediodía"],
+    // "and" only between days and times, so free text like "Bread and produce" stays as written.
+    [/,? and (?=(?:\d|lun|mar|mié|jue|vie|sáb|dom|lunes|martes|miércoles|jueves|viernes|sábados?|domingos?|mediodía)(?![A-Za-z]))/g, " y "]
+  ];
+  function localHours(s) {
+    if (lang !== "es") return s;
+    return ES_HOURS.reduce(function (out, p) { return out.replace(p[0], p[1]); }, s);
+  }
+
   function hoursText(l) {
-    if (l.hours) return l.hours;
+    if (l.hours) return localHours(l.hours);
     if (l.schedule.length) return scheduleText(l);
     if (l.days.length) return t("daysNoTimes", { days: l.days.map(function (d) { return TEXT[lang].dayNames[d]; }).join(", ") });
     return t("hoursNotListed");
@@ -581,9 +617,10 @@
     }).join("; "));
     row(t("bring"), l.bring);
     row(t("notes"), l.notes);
+    // Only show these two when we actually know the answer.
     if (l.address) {
-      row(t("wheelchair"), l.wheelchair === "yes" ? t("yes") : l.wheelchair === "no" ? t("no") : t("unknown"));
-      row(t("serviceStyle"), { walk: t("styleWalk"), drive: t("styleDrive"), both: t("styleBoth") }[l.style] || t("unknown"));
+      row(t("wheelchair"), l.wheelchair === "yes" ? t("yes") : l.wheelchair === "no" ? t("no") : "");
+      row(t("serviceStyle"), { walk: t("styleWalk"), drive: t("styleDrive"), both: t("styleBoth") }[l.style] || "");
     }
 
     var actions = el("div", { class: "card-actions" });
@@ -605,7 +642,8 @@
       el("h3", { text: l.name }), meta,
       status ? el("p", { class: "status status-" + status.cls, text: status.text }) : null,
       addr ? el("p", { class: "address", text: addr }) : null,
-      dl, actions, checked, stale
+      dl, actions, checked, stale,
+      lang === "es" ? el("p", { class: "checked", lang: "es", text: t("someEnglish") }) : null
     ]);
   }
 
@@ -684,6 +722,9 @@
     var nothingNearby = origin && !outsideArea && nearby.length === 0 && !filtersOn;
     if (outsideArea || nothingNearby) {
       var box = el("div", { class: "no-listings" }, [el("p", { text: t("noArea") })]);
+      // The Hunger Free Colorado hotline serves the whole state, so Colorado visitors see it first.
+      var hotline = origin && origin.colorado && listings.filter(function (l) { return l.id === STATE_HOTLINE; })[0];
+      if (hotline) box.appendChild(el("div", { class: "listings state-hotline" }, [card(hotline, null, radius, when)]));
       var opts = el("div", { class: "national" });
       nationalOptions(origin && origin.zip).forEach(function (n) { opts.appendChild(n); });
       box.appendChild(opts);
@@ -750,10 +791,11 @@
       var pt = zips[zip];
       // Zip codes not in our Colorado file are outside the coverage area.
       if (pt) {
-        origin = { lat: pt.lat, lon: pt.lon, zip: zip };
+        origin = { lat: pt.lat, lon: pt.lon, zip: zip, colorado: true };
         outsideArea = miles(origin, DENVER) > COVERAGE_MILES;
       } else {
-        origin = { lat: 0, lon: 0, zip: zip };
+        // Colorado zip codes run from 80001 to 81658, in case one is missing from our file.
+        origin = { lat: 0, lon: 0, zip: zip, colorado: +zip >= 80001 && +zip <= 81658 };
         outsideArea = true;
       }
       countUsage("search");
@@ -770,7 +812,8 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       var pt = { lat: pos.coords.latitude, lon: pos.coords.longitude };
       loadZips().then(function () {
-        origin = { lat: pt.lat, lon: pt.lon, zip: nearestZip(pt) };
+        var near = nearestZip(pt); // null when no Colorado zip code is within 15 miles
+        origin = { lat: pt.lat, lon: pt.lon, zip: near, colorado: !!near };
         outsideArea = miles(origin, DENVER) > COVERAGE_MILES;
         $("zip").value = "";
         countUsage("search");
