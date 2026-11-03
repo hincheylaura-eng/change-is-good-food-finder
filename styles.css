@@ -97,14 +97,36 @@ select, input[type="search"] {
 
 /* Filters */
 .filters { margin-bottom: 8px; }
-.btn-toggle {
-  width: 100%; font-size: 1.25rem; min-height: 56px;
-  background: #fff; color: var(--purple);
+/* "When do you need food?": three big radio buttons that look like one control */
+.when { border: 0; margin: 0; padding: 0; min-width: 0; }
+.when legend { font-weight: 700; color: var(--plum); font-size: 1.15rem; padding: 0; margin-bottom: 8px; }
+.segmented { display: flex; border: 2px solid var(--purple); border-radius: 12px; overflow: hidden; }
+.segmented input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.segmented label {
+  flex: 1 1 0; min-height: 56px; display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 8px 4px; font-size: 1rem; font-weight: 700; color: var(--purple); background: #fff; cursor: pointer; line-height: 1.2;
 }
-.btn-toggle[aria-pressed="true"] { background: var(--purple); color: #fff; }
-.btn-toggle[aria-pressed="true"]::before { content: "✓ "; }
+.segmented label + input + label { border-left: 2px solid var(--purple); }
+.segmented input:checked + label { background: var(--purple); color: #fff; }
+.segmented input:checked + label::before { content: "✓ "; }
+.segmented input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: -5px; }
+.ahead-panel {
+  display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: center;
+  background: var(--lavender); border-radius: 12px; padding: 12px; margin-top: 10px;
+}
+.ahead-panel[hidden] { display: none; }
+.ahead-panel label { font-weight: 700; }
 .filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-.filter-row select, .filter-row input { flex: 1 1 200px; min-width: 0; }
+.filter-row select, .filter-row input[type="search"], .style-wrap { flex: 1 1 200px; min-width: 0; }
+.style-wrap select { width: 100%; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 48px; flex: 1 1 200px; cursor: pointer; }
+.check input { width: 24px; height: 24px; accent-color: var(--purple); flex: none; }
+.check[hidden], .style-wrap[hidden] { display: none; }
+.filters-on {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  background: var(--blush); border-radius: 12px; padding: 10px 12px; margin-top: 12px;
+}
+.filters-on[hidden] { display: none; }
 
 .results-summary { color: var(--muted); margin: 14px 0 8px; }
 
@@ -121,7 +143,12 @@ select, input[type="search"] {
   padding: 2px 10px; font-size: .9rem; font-weight: 600;
 }
 .distance { font-weight: 700; color: var(--pink); }
-.open-now { color: #1e6b3a; font-weight: 700; } /* 6.5:1 on white */
+/* Status line on each card. Each pair passes 4.5:1 or better. */
+.status { display: inline-block; margin: 0 0 8px; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: .95rem; }
+.status-open { background: #e3f2e8; color: #1e6b3a; }    /* 5.6:1 */
+.status-later { background: var(--lavender); color: var(--plum); }
+.status-closed { background: #f1eef4; color: var(--muted); }
+.status-unknown { background: var(--blush); color: #8c1d40; } /* 7.9:1 */
 .card dl { margin: 0; }
 .card dt { font-weight: 700; margin-top: 8px; }
 .card dd { margin: 0; }
@@ -136,6 +163,23 @@ select, input[type="search"] {
 }
 
 .section-title { color: var(--plum); font-size: 1.3rem; margin: 28px 0 10px; }
+.section-note { margin: -4px 0 12px; color: var(--muted); }
+
+/* "Know a place we're missing?" form */
+.suggest { background: var(--lavender); border-radius: var(--radius); padding: 18px; margin-top: 32px; }
+.suggest h2 { color: var(--plum); font-size: 1.25rem; margin: 0 0 6px; }
+.suggest p { margin-top: 0; }
+.suggest form { display: grid; gap: 6px; }
+.suggest label { font-weight: 700; margin-top: 8px; }
+.suggest input[type="text"], .suggest textarea {
+  font: inherit; font-size: 1rem; padding: 10px 12px; min-height: 48px; width: 100%;
+  border: 2px solid var(--border); border-radius: 10px; background: #fff; color: var(--ink);
+}
+.suggest .btn { margin-top: 12px; font-size: 1.1rem; }
+.suggest .btn:disabled { opacity: .7; cursor: wait; }
+.suggest-msg { min-height: 1.2em; font-weight: 600; }
+.suggest-msg.error { color: #8c1d40; }
+.trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 /* Friendly "no listings" message + national options */
 .no-listings {

@@ -17,10 +17,12 @@ A free community project by Change is Good.
 | `zipcodes.csv` | Map points for every Colorado zip code, from the US Census Bureau 2024 ZCTA Gazetteer. Zip codes outside Colorado get the national options. |
 | `images/` | `lotus.png` (header logo: the lotus cut from `logo.png`), plus the browser tab and home-screen icons |
 | `logo.png` | Original logo (not loaded by the site; kept as the master copy) |
-| `netlify.toml` | Tells Netlify there's no build step |
+| `netlify.toml` | Netlify settings (no build command) |
+| `thanks.html` | Shown after someone sends a "Know a place we're missing?" suggestion without JavaScript |
+| `netlify/functions/count.mjs` and `package.json` | The anonymous visit and search counter. Netlify sets these up on its own. |
 | `SETUP-GUIDE.md` | How to put the site online with GitHub and Netlify |
 
-No frameworks, no build step, no database, no tracking, no cookies, no API keys.
+No frameworks, no build step, no tracking, no cookies, no API keys. Suggestions from the website's form go to Netlify Forms, and the anonymous daily visit and search totals are stored in Netlify Blobs.
 
 ## Trying it on your own computer
 

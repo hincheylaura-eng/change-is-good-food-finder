@@ -1,6 +1,10 @@
-# Netlify settings. There is no build step: the folder is published as-is.
+# Netlify settings. There is no build command: the folder is published as-is.
+# Netlify installs package.json (only used by the anonymous usage counter) on its own.
 [build]
   publish = "."
+
+[functions]
+  directory = "netlify/functions"
 
 # Always check for a fresh listings.csv so changes show up right away.
 [[headers]]
@@ -8,3 +12,22 @@
   [headers.values]
     Cache-Control = "no-cache"
     Content-Type = "text/csv; charset=utf-8"
+
+# Behind-the-scenes files are not part of the website.
+[[redirects]]
+  from = "/node_modules/*"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package.json"
+  to = "/404"
+  status = 404
+  force = true
