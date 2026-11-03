@@ -33,6 +33,24 @@ You can also open listings.csv in Excel, Numbers, or Google Sheets. When saving,
 | Last verified | The date you confirmed the info: `YYYY-MM-DD`. After 30 days the site shows "Hours may have changed, please call first." If blank, the site says "Not confirmed yet." | `2026-10-27` |
 | Source | The web page where you confirmed the info | `https://metrocaring.org` |
 | Active | `Y` to show, `N` to hide. Use `N` instead of deleting a row. | `Y` |
+| Distribution hours | When food is actually handed out, in the exact format below (not office hours). Powers "Open now" and "Look ahead." Leave blank if unknown: the site then says "Hours not listed, call ahead." | `Mon Wed 09:00-12:00; Sat 10:00-13:00` |
+| Wheelchair accessible | `Yes`, `No`, or blank if unknown. The site shows "Unknown" when blank. | `Yes` |
+| Service style | `Walk-in`, `Drive-through`, `Walk-in and drive-through`, or blank if unknown | `Drive-through` |
+
+## The Distribution hours format
+
+The site reads this column to work out "Open now" and "Look ahead," so it uses a strict format:
+
+- **Times** use the 24-hour clock with a dash and no spaces: `09:00-12:00`, `13:00-15:30`, `18:00-19:30`.
+- **Days** use short names: `Mon Tue Wed Thu Fri Sat Sun`. A range works too: `Mon-Fri`.
+- **Several time slots** on the same days go one after another: `Mon 09:00-11:30 13:00-15:00`.
+- **Different schedules** for different days are separated with a semicolon: `Mon Wed 09:00-12:00; Tue 16:00-19:00`.
+- **Only some weeks of the month:** put `1st`, `2nd`, `3rd`, `4th`, `5th`, or `last` before the day: `1st 3rd Sat 09:00-12:00`. Example: "closed the first Thursday" is `2nd 3rd 4th 5th Thu 09:00-12:00`.
+- **One-time events:** just the times, like `10:00-13:00`. The site uses the Event date.
+
+The **Hours** column is still the friendly version people read on the card. Write it in plain words, like `Mon and Wed 9am-noon`. If Hours is blank, the site shows the Distribution hours instead.
+
+Seasonal schedules (like "Jan-Oct: 1st, 2nd, and 4th Thursdays") can't be written in one line. Enter the schedule for the current season and update it when the season changes.
 
 ## Rules that keep the file working
 
@@ -51,3 +69,6 @@ You can also open listings.csv in Excel, Numbers, or Google Sheets. When saving,
 - Update `Last verified` and `Source` only when the information was actually confirmed on that page that day.
 - If sources disagree, say so in Notes ("Schedules posted online do not agree. Please call to confirm.") instead of guessing.
 - Use `Active` = `N` for places that appear closed, rather than deleting rows.
+- Fill in `Distribution hours`, `Wheelchair accessible`, and `Service style` only from what the source actually says. Leave them blank rather than guessing.
+- Check seasonal schedules (for example Bienvenidos Food Bank changes in January) and update `Distribution hours` when the season changes.
+- New places people suggest through the website's form arrive in Netlify (Forms). Treat them as leads to verify, never as confirmed listings.

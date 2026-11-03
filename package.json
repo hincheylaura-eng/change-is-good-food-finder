@@ -1,0 +1,9 @@
+{
+  "name": "change-is-good-food-finder",
+  "private": true,
+  "description": "Only needed for the anonymous usage counter (netlify/functions/count.mjs). Netlify installs this automatically.",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

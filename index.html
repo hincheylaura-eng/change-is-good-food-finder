@@ -58,9 +58,28 @@
 
     <div id="results-area">
       <section class="filters" aria-label="Filters" data-i18n-aria="filters">
-        <button type="button" id="open-today" class="btn btn-toggle" aria-pressed="false">
-          <span data-i18n="openToday">Open today</span>
-        </button>
+        <fieldset class="when">
+          <legend data-i18n="whenLegend">When do you need food?</legend>
+          <div class="segmented">
+            <input type="radio" name="when" id="when-all" value="all" checked>
+            <label for="when-all" data-i18n="modeAll">Show all</label>
+            <input type="radio" name="when" id="when-now" value="now">
+            <label for="when-now" data-i18n="modeNow">Open now</label>
+            <input type="radio" name="when" id="when-ahead" value="ahead">
+            <label for="when-ahead" data-i18n="modeAhead">Look ahead</label>
+          </div>
+          <div id="ahead-panel" class="ahead-panel" hidden>
+            <label for="ahead-day" data-i18n="aheadDay">Day</label>
+            <select id="ahead-day"></select>
+            <label for="ahead-time" data-i18n="aheadTime">Time</label>
+            <select id="ahead-time">
+              <option value="any" data-i18n="anyTime">Any time</option>
+              <option value="morning" data-i18n="morning">Morning (6am to noon)</option>
+              <option value="afternoon" data-i18n="afternoon">Afternoon (noon to 5pm)</option>
+              <option value="evening" data-i18n="evening">Evening (5pm to 9pm)</option>
+            </select>
+          </div>
+        </fieldset>
         <div class="filter-row">
           <label for="type-filter" class="sr-only" data-i18n="typeLabel">Type of help</label>
           <select id="type-filter">
@@ -73,13 +92,57 @@
           <label for="name-search" class="sr-only" data-i18n="searchLabel">Search by name</label>
           <input id="name-search" type="search" placeholder="Search by name" data-i18n-placeholder="searchLabel">
         </div>
+        <!-- These two filters only appear when at least one listing has this information. -->
+        <div class="filter-row">
+          <label class="check" id="wheelchair-wrap" hidden>
+            <input type="checkbox" id="wheelchair-filter">
+            <span data-i18n="wheelchairOnly">Wheelchair accessible only</span>
+          </label>
+          <span id="style-wrap" class="style-wrap" hidden>
+            <label for="style-filter" class="sr-only" data-i18n="serviceStyle">Walk-in or drive-through</label>
+            <select id="style-filter">
+              <option value="" data-i18n="styleAny">Walk-in or drive-through: any</option>
+              <option value="walk" data-i18n="styleWalk">Walk-in</option>
+              <option value="drive" data-i18n="styleDrive">Drive-through</option>
+            </select>
+          </span>
+        </div>
       </section>
 
+      <div id="filters-on" class="filters-on" hidden>
+        <span data-i18n="filtersOn">Some filters are on, so you may not see every place.</span>
+        <button type="button" id="clear-filters" class="btn btn-secondary" data-i18n="clearFilters">Clear filters</button>
+      </div>
       <p id="results-summary" class="results-summary" role="status" aria-live="polite"></p>
       <div id="no-results"></div>
       <div id="listings" class="listings"></div>
+      <div id="unknown-hours"></div>
       <div id="phone-help"></div>
     </div>
+
+    <section class="suggest" aria-labelledby="suggest-title">
+      <h2 id="suggest-title" data-i18n="suggestTitle">Know a place we're missing?</h2>
+      <p data-i18n="suggestIntro">Tell us about it. Every suggestion is reviewed by a person before it's added. Nothing is published automatically.</p>
+      <!-- Netlify Forms: submissions appear in the Netlify dashboard under Forms. "company" is a hidden spam trap. -->
+      <form id="suggest-form" name="suggest-place" method="POST" action="/thanks.html" data-netlify="true" netlify-honeypot="company">
+        <input type="hidden" name="form-name" value="suggest-place">
+        <p class="trap" aria-hidden="true">
+          <label>Leave this empty: <input name="company" tabindex="-1" autocomplete="off"></label>
+        </p>
+        <label for="s-name" data-i18n="fName">Name of the place</label>
+        <input id="s-name" name="name" type="text" required autocomplete="off">
+        <label for="s-address" data-i18n="fAddress">Address</label>
+        <input id="s-address" name="address" type="text" required autocomplete="off">
+        <label for="s-hours" data-i18n="fHours">Days and hours (if you know them)</label>
+        <input id="s-hours" name="hours" type="text" autocomplete="off">
+        <label for="s-notes" data-i18n="fNotes">Anything else? (what to bring, who it serves)</label>
+        <textarea id="s-notes" name="notes" rows="3"></textarea>
+        <label for="s-contact" data-i18n="fContact">Your email or phone (optional, only if it's OK to contact you with questions)</label>
+        <input id="s-contact" name="contact" type="text" autocomplete="off">
+        <button type="submit" class="btn btn-primary" data-i18n="fSubmit">Send suggestion</button>
+        <p id="suggest-msg" class="suggest-msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
 
     <section class="outside" aria-labelledby="outside-title">
       <h2 id="outside-title" data-i18n="outsideTitle">Outside Denver?</h2>
@@ -96,6 +159,7 @@
     <div class="wrap">
       <p data-i18n="footer">A free community project by Change is Good.</p>
       <p class="privacy" data-i18n="privacy">No tracking, no cookies, no ads. Your zip code and location stay on your phone.</p>
+      <p class="privacy" data-i18n="privacyCount">We only count how many visits and searches happen, never who you are.</p>
     </div>
   </footer>
 
