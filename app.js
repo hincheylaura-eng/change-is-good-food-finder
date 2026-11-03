@@ -75,6 +75,8 @@
       summaryAhead: "Places open {when}: {n}.",
       summaryAheadNear: "Places open {when} within {r} miles: {n}.",
       summaryPast: "Just past {r} miles: {n}.",
+      closedDates: "Closed on",
+      closedToday: "Closed today (special closure)",
       noneOpen: "None of the places with listed hours are open then. Try another time, or call the places below.",
       noneMatch: "Nothing matches. Try \"Show all,\" a bigger distance, or clear filters.",
       noArea: "We don't have detailed listings for your area yet. These free services can help you find food near you:",
@@ -189,6 +191,8 @@
       summaryAhead: "Lugares abiertos {when}: {n}.",
       summaryAheadNear: "Lugares abiertos {when} a {r} millas o menos: {n}.",
       summaryPast: "Un poco más de {r} millas: {n}.",
+      closedDates: "Cerrado el",
+      closedToday: "Cerrado hoy (cierre especial)",
       noneOpen: "Ninguno de los lugares con horario publicado abre a esa hora. Pruebe otra hora, o llame a los lugares de abajo.",
       noneMatch: "No hay resultados. Pruebe \"Ver todo\", una distancia mayor, o quite los filtros.",
       noArea: "Todavía no tenemos lugares detallados para su área. Estos servicios gratuitos le ayudan a encontrar comida cerca de usted:",
@@ -368,7 +372,18 @@
     var isLast = addDays(date, 7).getMonth() !== date.getMonth();
     return e.nth.indexOf(week) >= 0 || (isLast && e.nth.indexOf(-1) >= 0);
   }
+  // Closed dates: "2026-11-26 2026-12-31" or a range like "2026-11-25 to 2026-11-29".
+  function parseClosed(s) {
+    var out = [], re = /(\d{4}-\d{2}-\d{2})(?:\s*(?:to|-|–|—)\s*(\d{4}-\d{2}-\d{2}))?/g, m;
+    while ((m = re.exec(s || ""))) out.push([m[1], m[2] || m[1]]);
+    return out.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
+  }
+  function closedOn(l, date) {
+    var d = isoOf(date);
+    return l.closed.some(function (c) { return d >= c[0] && d <= c[1]; });
+  }
   function rangesOn(l, date) {
+    if (closedOn(l, date)) return [];
     var r = [];
     l.schedule.forEach(function (e) { if (entryApplies(e, date, l)) r = r.concat(e.ranges); });
     return r.sort(function (a, b) { return a[0] - b[0]; });
@@ -398,6 +413,7 @@
   // Returns "yes", "no", or "unknown" for whether a listing fits the chosen time.
   function timeMatch(l, when) {
     if (when.mode === "all") return "yes";
+    if (closedOn(l, when.date)) return "no";
     if (l.schedule.length) {
       return rangesOn(l, when.date).some(function (r) {
         return when.mode === "now" ? (when.from >= r[0] && when.from < r[1]) : (r[0] < when.to && r[1] > when.from);
@@ -411,6 +427,7 @@
 
   // Short status line on each card, e.g. "Open now, until 3pm".
   function statusOf(l, when) {
+    if (when.mode !== "ahead" && closedOn(l, new Date())) return { cls: "closed", text: t("closedToday") };
     if (!l.schedule.length) return { cls: "unknown", text: t("hoursNotListed") };
     if (when.mode === "ahead") {
       var r = rangesOn(l, when.date).filter(function (x) { return x[0] < when.to && x[1] > when.from; });
@@ -452,6 +469,7 @@
       id: o["id"], name: o["name"], type: o["type"], address: o["address"], city: o["city"],
       zip: (o["zip"] || "").slice(0, 5), lat: isNaN(lat) ? null : lat, lon: isNaN(lon) ? null : lon,
       days: days, hours: o["hours"], schedule: parseSchedule(o["distribution hours"]),
+      closed: parseClosed(o["closed dates"]),
       bring: o["what to bring"], phone: o["phone"], website: o["website"],
       notes: o["notes"], eventDate: o["event date"], verified: o["last verified"], source: o["source"],
       wheelchair: /^(y|yes|true)$/.test(wc) ? "yes" : /^(n|no|false)$/.test(wc) ? "no" : "",
@@ -557,6 +575,10 @@
     }
     if (l.type === "One-time event") row(t("eventDate"), formatDate(l.eventDate));
     row(t("distHours"), hoursText(l));
+    var today = todayISO();
+    row(t("closedDates"), l.closed.filter(function (c) { return c[1] >= today; }).map(function (c) {
+      return c[0] === c[1] ? formatDate(c[0]) : formatDate(c[0]) + " – " + formatDate(c[1]);
+    }).join("; "));
     row(t("bring"), l.bring);
     row(t("notes"), l.notes);
     if (l.address) {

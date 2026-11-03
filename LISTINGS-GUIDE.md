@@ -36,6 +36,7 @@ You can also open listings.csv in Excel, Numbers, or Google Sheets. When saving,
 | Distribution hours | When food is actually handed out, in the exact format below (not office hours). Powers "Open now" and "Look ahead." Leave blank if unknown: the site then says "Hours not listed, call ahead." | `Mon Wed 09:00-12:00; Sat 10:00-13:00` |
 | Wheelchair accessible | `Yes`, `No`, or blank if unknown. The site shows "Unknown" when blank. | `Yes` |
 | Service style | `Walk-in`, `Drive-through`, `Walk-in and drive-through`, or blank if unknown | `Drive-through` |
+| Closed dates | Days a place is closed outside its normal schedule (holidays, special closures), as `YYYY-MM-DD`. Separate dates with spaces. For several days in a row, write `YYYY-MM-DD to YYYY-MM-DD`. On those days the place is left out of "Open now" and "Look ahead," and the card lists the upcoming dates. Past dates can stay; they're ignored. | `2026-11-26 2026-12-24 to 2026-12-26` |
 
 ## The Distribution hours format
 
@@ -71,4 +72,5 @@ Seasonal schedules (like "Jan-Oct: 1st, 2nd, and 4th Thursdays") can't be writte
 - Use `Active` = `N` for places that appear closed, rather than deleting rows.
 - Fill in `Distribution hours`, `Wheelchair accessible`, and `Service style` only from what the source actually says. Leave them blank rather than guessing.
 - Check seasonal schedules (for example Bienvenidos Food Bank changes in January) and update `Distribution hours` when the season changes.
+- When a source lists specific closure dates (holidays, "closed Nov 26"), add them to `Closed dates` as well as mentioning them in Notes. A rule that repeats every month ("closed the first Thursday") belongs in `Distribution hours` instead, using the week-of-month format.
 - New places people suggest through the website's form arrive in Netlify (Forms). Treat them as leads to verify, never as confirmed listings.
