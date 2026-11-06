@@ -10,6 +10,7 @@
   var COVERAGE_MILES = 40;   // zip codes farther than this from downtown Denver get the national options
   var EDGE_MILES = 1;        // also show places just past the distance, since a zip code is measured from its middle
   var STALE_DAYS = 30;       // "Hours may have changed" note after this many days
+  var AHEAD_DAYS = 31;       // "Look ahead" offers today plus the next 30 days
   var STATE_HOTLINE = "hunger-free-colorado-hotline"; // shown to Colorado zip codes with no local listings
   var DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var WINDOWS = { any: [0, 1440], morning: [360, 720], afternoon: [720, 1020], evening: [1020, 1260] };
@@ -502,7 +503,7 @@
   function fillAheadDays() {
     var sel = $("ahead-day"), keep = sel.value || "0";
     sel.textContent = "";
-    for (var i = 0; i < 14; i++) {
+    for (var i = 0; i < AHEAD_DAYS; i++) {
       var label = i === 0 ? t("today") : i === 1 ? t("tomorrow") :
         addDays(new Date(), i).toLocaleDateString(lang === "es" ? "es-US" : "en-US", { weekday: "long", month: "short", day: "numeric" });
       sel.appendChild(el("option", { value: String(i), text: label }));
